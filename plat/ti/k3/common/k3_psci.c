@@ -24,6 +24,7 @@
 #define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
 
 uintptr_t k3_sec_entrypoint;
+bool encrypt_image;
 
 static void k3_cpu_standby(plat_local_state_t cpu_state)
 {
@@ -282,6 +283,11 @@ static void k3_pwr_domain_suspend_to_mode(const psci_power_state_t *target_state
 	k3_gic_cpuif_disable();
 	k3_gic_save_context();
 
+	if (encrypt_image)
+	{
+		ti_sci_encrypt_tfa((uint64_t)__TEXT_START__, BL31_SIZE);
+	}
+
 	k3_pwr_domain_off(target_state);
 
 	ti_sci_enter_sleep(proc_id, mode, k3_sec_entrypoint);
@@ -345,6 +351,10 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	ret = ti_sci_query_fw_caps(&fw_caps);
 	if (ret) {
 		ERROR("Unable to query firmware capabilities (%d)\n", ret);
+	}
+
+	if (fw_caps & MSG_FLAG_CAPS_LPM_ENCRYPT_IMAGE) {
+		encrypt_image = true;
 	}
 
 	/* If firmware does not support any known suspend mode */
