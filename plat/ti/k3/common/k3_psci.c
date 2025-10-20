@@ -11,6 +11,8 @@
 #include <common/debug.h>
 #include <lib/el3_runtime/cpu_data.h>
 #include <lib/psci/psci.h>
+#include <lib/mmio.h>
+#include <lib/utils_def.h>
 #include <plat/common/platform.h>
 
 #include <ti_sci_protocol.h>
@@ -83,6 +85,27 @@ static int k3_pwr_domain_on(u_register_t mpidr)
 	return PSCI_E_SUCCESS;
 }
 
+uint32_t get_plat_cluster_start_id()
+{
+	static uint32_t cluster_id;
+	uint32_t part_id, jtag_id_reg;
+
+	if (cluster_id) {
+		return cluster_id;
+	}
+
+	jtag_id_reg = mmio_read_32(WKUP_CTRL_MMR0_BASE + JTAG_ID);
+	part_id = EXTRACT(JTAG_PART_ID, jtag_id_reg);
+
+	if ((part_id == J7200_PART_ID) || (part_id == J721E_PART_ID) || (part_id == J721S2_PART_ID)) {
+		cluster_id = J7_PLAT_CLUSTER_DEVICE_START_ID;
+	} else {
+		cluster_id = PLAT_CLUSTER_DEVICE_START_ID;
+	}
+
+	return cluster_id;
+}
+
 void k3_pwr_domain_off(const psci_power_state_t *target_state)
 {
 	int core, cluster, proc_id, device_id, cluster_id, ret;
@@ -97,7 +120,7 @@ void k3_pwr_domain_off(const psci_power_state_t *target_state)
 	cluster = MPIDR_AFFLVL1_VAL(read_mpidr_el1());
 	proc_id = PLAT_PROC_START_ID + core;
 	device_id = PLAT_PROC_DEVICE_START_ID + core;
-	cluster_id = PLAT_CLUSTER_DEVICE_START_ID + (cluster * 2);
+	cluster_id = get_plat_cluster_start_id() + (cluster * 2);
 
 	/*
 	 * If we are the last core in the cluster then we take a reference to
