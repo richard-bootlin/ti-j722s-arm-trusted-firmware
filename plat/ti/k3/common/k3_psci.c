@@ -357,17 +357,20 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 		encrypt_image = true;
 	}
 
-	/* If firmware does not support any known suspend mode */
-	if (!(fw_caps & (MSG_FLAG_CAPS_LPM_DEEP_SLEEP |
+	/* If firmware is capabale of low power modes */
+	if (fw_caps & (MSG_FLAG_CAPS_LPM_DM_MANAGED |
+			MSG_FLAG_CAPS_LPM_BOARDCFG_MANAGED)) {
+		k3_plat_psci_ops.pwr_domain_suspend = k3_pwr_domain_suspend_dm_managed;
+	} else if (!(fw_caps & (MSG_FLAG_CAPS_LPM_DEEP_SLEEP |
 			 MSG_FLAG_CAPS_LPM_MCU_ONLY |
 			 MSG_FLAG_CAPS_LPM_STANDBY |
 			 MSG_FLAG_CAPS_LPM_PARTIAL_IO))) {
-		/* Disable PSCI suspend support */
+		/* If firmware does not support any known suspend mode
+		 * disable PSCI suspend support
+		 */
 		k3_plat_psci_ops.pwr_domain_suspend = NULL;
 		k3_plat_psci_ops.pwr_domain_suspend_finish = NULL;
 		k3_plat_psci_ops.get_sys_suspend_power_state = NULL;
-	} else if (fw_caps & MSG_FLAG_CAPS_LPM_DM_MANAGED) {
-		k3_plat_psci_ops.pwr_domain_suspend = k3_pwr_domain_suspend_dm_managed;
 	}
 
 	*psci_ops = &k3_plat_psci_ops;
