@@ -33,6 +33,7 @@
 #define J721E_PART_ID			U(0xBB64)
 #define J7200_PART_ID			U(0xBB6D)
 #define J721S2_PART_ID			U(0xBB75)
+#define J722S_PART_ID			U(0xBBA0)
 #define J784S4_J742S2_PART_ID		U(0xBB80)
 
 #define JTAG_PART_ID_WIDTH		U(0x10)
