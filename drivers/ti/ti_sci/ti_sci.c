@@ -1723,6 +1723,7 @@ int ti_sci_enter_sleep(uint8_t proc_id,
 	struct ti_sci_xfer xfer;
 	int ret;
 
+	VERBOSE("%s: %d\n", __func__, __LINE__);
 	ret = ti_sci_setup_one_xfer(TI_SCI_MSG_ENTER_SLEEP, 0,
 				    &req, sizeof(req),
 				    NULL, 0,
@@ -1738,6 +1739,7 @@ int ti_sci_enter_sleep(uint8_t proc_id,
 	req.core_resume_hi = (core_resume_addr & TISCI_ADDR_HIGH_MASK) >>
 			     TISCI_ADDR_HIGH_SHIFT;
 
+	VERBOSE("%s: %d\n", __func__, __LINE__);
 	ret = ti_sci_do_xfer(&xfer);
 	if (ret != 0U) {
 		ERROR("Transfer send failed (%d)\n", ret);
@@ -1800,6 +1802,7 @@ int ti_sci_encrypt_tfa(uint64_t src_tfa_addr,
 	struct ti_sci_xfer xfer;
 	int ret;
 
+	VERBOSE("%s: %d\n", __func__, __LINE__);
 	ret = ti_sci_setup_one_xfer(TISCI_MSG_LPM_ENCRYPT_TFA, 0,
 				    &req, sizeof(req),
 				    &resp, sizeof(resp),
@@ -1812,6 +1815,7 @@ int ti_sci_encrypt_tfa(uint64_t src_tfa_addr,
 	req.src_tfa_addr = src_tfa_addr;
 	req.src_tfa_len = src_tfa_len;
 
+	VERBOSE("%s: %d tfa_addr=0x%lx sz=%u\n", __func__, __LINE__, src_tfa_addr,src_tfa_len);
 	ret = ti_sci_do_xfer(&xfer);
 	if (ret != 0U) {
 		ERROR("Transfer send failed (%d)\n", ret);
