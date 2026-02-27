@@ -97,7 +97,6 @@ uint32_t get_plat_cluster_start_id()
 
 	jtag_id_reg = mmio_read_32(WKUP_CTRL_MMR0_BASE + JTAG_ID);
 	part_id = EXTRACT(JTAG_PART_ID, jtag_id_reg);
-	INFO("PART ID: %x\n", part_id);
 
 	if ((part_id == J7200_PART_ID) || (part_id == J721E_PART_ID) || (part_id == J721S2_PART_ID)) {
 		cluster_id = J7_PLAT_CLUSTER_DEVICE_START_ID;
@@ -280,21 +279,16 @@ static void k3_pwr_domain_suspend_to_mode(const psci_power_state_t *target_state
 	core = plat_my_core_pos();
 	proc_id = PLAT_PROC_START_ID + core;
 
-	VERBOSE("%s: %d\n", __func__, __LINE__);
 	/* Prevent interrupts from spuriously waking up this cpu */
 	k3_gic_cpuif_disable();
-	VERBOSE("%s: %d\n", __func__, __LINE__);
 	k3_gic_save_context();
-	VERBOSE("%s: %d\n", __func__, __LINE__);
 
 	if (encrypt_image)
 	{
 		ti_sci_encrypt_tfa((uint64_t)__TEXT_START__, BL31_SIZE);
 	}
 
-	VERBOSE("%s: %d\n", __func__, __LINE__);
 	k3_pwr_domain_off(target_state);
-	VERBOSE("%s: %d\n", __func__, __LINE__);
 
 	ti_sci_enter_sleep(proc_id, mode, k3_sec_entrypoint);
 }
@@ -304,16 +298,12 @@ static void k3_pwr_domain_suspend_dm_managed(const psci_power_state_t *target_st
 	uint8_t mode = MSG_VALUE_SLEEP_MODE_DEEP_SLEEP;
 	int ret;
 
-	VERBOSE("%s: %d\n", __func__, __LINE__);
 	ret = ti_sci_lpm_get_next_sys_mode(&mode);
 	if (ret != 0) {
 		ERROR("Failed to fetch next system mode\n");
 	}
-	INFO("next mode: %u\n", mode);
 
-	VERBOSE("%s: %d\n", __func__, __LINE__);
 	k3_pwr_domain_suspend_to_mode(target_state, mode);
-	VERBOSE("%s: %d\n", __func__, __LINE__);
 }
 
 static void k3_pwr_domain_suspend(const psci_power_state_t *target_state)
@@ -358,13 +348,11 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 
 	k3_sec_entrypoint = sec_entrypoint;
 
-	VERBOSE("Querying fw caps\n");
 	ret = ti_sci_query_fw_caps(&fw_caps);
 	if (ret) {
 		ERROR("Unable to query firmware capabilities (%d)\n", ret);
 	}
 
-	INFO("FW caps: %x\n", (unsigned int)fw_caps);
 	if (fw_caps & MSG_FLAG_CAPS_LPM_ENCRYPT_IMAGE) {
 		encrypt_image = true;
 	}
